@@ -12,7 +12,7 @@
 flowchart LR
     A["UGREEN NAS Sensors & Docker Socket"] -->|JSON Metrics| B["Python Telemetry Collector"]
     B -->|Great Expectations Gate| C["Data Contract Validation"]
-    C -->|Passed| D[("DuckDB / Parquet Lakehouse")]
+    C -->|Passed| D["DuckDB / Parquet Lakehouse"]
     D -->|dbt Core Transformation| E["Gold Analytics Models"]
     E -->|Git Publisher| F["GitHub Repository Reports"]
 ```
