@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   auto-datapulse:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: auto-datapulse
     restart: unless-stopped
     environment:
@@ -11,8 +13,8 @@ services:
       - GITHUB_REPO=siddharthsbhadauria/auto-datapulse
       - POLL_INTERVAL_SECONDS=900
     volumes:
-      - ./data:/app/data
-      - ./REPORTS:/app/REPORTS
+      - ${DATA_PATH:-./data}:/app/data
+      - ${REPORTS_PATH:-./REPORTS}:/app/REPORTS
       - /var/run/docker.sock:/var/run/docker.sock:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
