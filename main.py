@@ -95,4 +95,9 @@ def start_daemon():
         time.sleep(poll_interval)
 
 if __name__ == "__main__":
-    start_daemon()
+    # If running in GitHub Actions CI or with --once, execute a fast single validation pass (~25s)
+    if os.getenv("CI", "false").lower() == "true" or "--once" in sys.argv:
+        print("[INFO] CI environment detected. Running single validation pass...")
+        run_pipeline()
+    else:
+        start_daemon()
