@@ -1,0 +1,1 @@
+{"timestamp": "2026-08-10T12:16:17Z", "system": {"cpu_percent": 14.5, "ram_total_gb": 32.0, "ram_used_gb": 8.4, "ram_percent": 26.25, "disk_total_gb": 1000.0, "disk_used_gb": 240.0, "disk_percent": 24.0}, "disk_io": {"read_bytes": 1024000, "write_bytes": 2048000}, "status": "HEALTHY"}

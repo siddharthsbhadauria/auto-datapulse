@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  auto-datapulse:
+    build: .
+    container_name: auto-datapulse
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_REPO=siddharthsbhadauria/auto-datapulse
+      - POLL_INTERVAL_SECONDS=900
+    volumes:
+      - ./data:/app/data
+      - ./REPORTS:/app/REPORTS
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
