@@ -1,10 +1,11 @@
 """
-Auto-DataPulse Main Pipeline Entrypoint
+Auto-DataPulse Main Pipeline Entrypoint & Daemon Loop
 Orchestrates telemetry collection, Great Expectations contract verification, DuckDB persistence, and daily Git report publishing.
 """
 import os
 import sys
 import json
+import time
 from datetime import datetime, timezone
 
 from src.collector import TelemetryCollector
@@ -21,8 +22,8 @@ def run_pipeline():
     # 2. Great Expectations Data Contract Verification
     verifier = DataContractVerifier()
     if not verifier.verify_snapshot(snapshot):
-        print("[FATAL] Telemetry contract check failed! Aborting pipeline.")
-        sys.exit(1)
+        print("[FATAL] Telemetry contract check failed! Aborting pipeline execution step.")
+        return
 
     # 3. Persistence (DuckDB / JSON Backup)
     os.makedirs("data", exist_ok=True)
@@ -71,11 +72,27 @@ def run_pipeline():
     except Exception as e:
         print(f"[PERSISTENCE NOTICE] {e}")
 
-    # 4. Git Daily Report Publishing
+    # 4. Git Daily Report Publishing via API
     publisher = GitPublisher()
     publisher.publish_daily_report(snapshot)
 
-    print("[SUCCESS] Auto-DataPulse Pipeline completed successfully.")
+    print("[SUCCESS] Auto-DataPulse Pipeline step completed successfully.")
+
+def start_daemon():
+    poll_interval = int(os.getenv("POLL_INTERVAL_SECONDS", "900"))
+    print(f"==================================================================")
+    print(f"🚀 Auto-DataPulse Homelab Daemon Started")
+    print(f"⏱️  Polling Interval: {poll_interval} seconds ({poll_interval // 60} minutes)")
+    print(f"==================================================================")
+
+    while True:
+        try:
+            run_pipeline()
+        except Exception as e:
+            print(f"[ERROR] Daemon pipeline error: {e}")
+
+        print(f"⏳ Sleeping for {poll_interval} seconds ({poll_interval // 60}m) before next pulse...\n")
+        time.sleep(poll_interval)
 
 if __name__ == "__main__":
-    run_pipeline()
+    start_daemon()
