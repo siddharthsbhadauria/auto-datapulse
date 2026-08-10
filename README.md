@@ -29,18 +29,40 @@ flowchart LR
 
 ---
 
-## 🚀 Deployment on UGREEN NAS (Portainer)
+## 🚀 Deployment Instructions on UGREEN NAS (Portainer)
 
-### 1. Environment Variable Setup
-Create a `.env` file on your NAS:
-```env
-GITHUB_TOKEN=your_github_personal_access_token
-GITHUB_REPO=siddharthsbhadauria/auto-datapulse
-POLL_INTERVAL_SECONDS=900
-```
+### Option 1: Portainer Stacks (Git Repository Mode - Recommended)
 
-### 2. Deploy via Docker Compose
+1. Open **Portainer** on your NAS (`http://<NAS-IP>:9000`) ➔ **Stacks** ➔ **+ Add stack**.
+2. Set Stack Name: `auto-datapulse`.
+3. Select **Repository** build mode:
+   - **Repository URL**: `https://github.com/siddharthsbhadauria/auto-datapulse.git`
+   - **Repository reference**: `refs/heads/main`
+   - **Compose path**: `docker-compose.yml`
+4. Add **Environment Variables** in the Portainer UI:
+   - `GITHUB_TOKEN`: `your_personal_access_token`
+   - `DATA_PATH`: `/volume2/docker/auto-datapulse/data`
+   - `REPORTS_PATH`: `/volume2/docker/auto-datapulse/REPORTS`
+5. Click **Deploy the stack**. Portainer will automatically pull the repo, build the Docker container image, map your `/volume2/docker` persistent storage, and start the service 24/7.
+
+---
+
+### Option 2: NAS Terminal / SSH CLI
+
 ```bash
+# 1. SSH into your NAS and navigate to docker volume directory
+cd /volume/docker
+
+# 2. Clone repository
+git clone https://github.com/siddharthsbhadauria/auto-datapulse.git
+cd auto-datapulse
+
+# 3. Create .env file with custom volume paths and token
+echo "GITHUB_TOKEN=your_personal_access_token" > .env
+echo "DATA_PATH=/volume2/docker/auto-datapulse/data" >> .env
+echo "REPORTS_PATH=/volume2/docker/auto-datapulse/REPORTS" >> .env
+
+# 4. Build and start container in background
 docker-compose up -d --build
 ```
 
