@@ -1,13 +1,13 @@
 # 🖥️ UGREEN NAS Telemetry Report - 2026-11-16
 
-*Generated automatically by Auto-DataPulse at 2026-11-16T21:39:38Z*
+*Generated automatically by Auto-DataPulse at 2026-11-16T21:54:40Z*
 
 ---
 
 ## 📊 System Overview
-- **CPU Utilization**: `6.2%`
-- **RAM Usage**: `17.04 GB` / `31.12 GB` (`54.8%`)
-- **Disk Usage**: `221.34 GB` / `916.12 GB` (`24.3%`)
+- **CPU Utilization**: `5.8%`
+- **RAM Usage**: `16.98 GB` / `31.12 GB` (`54.6%`)
+- **Disk Usage**: `221.35 GB` / `916.12 GB` (`24.3%`)
 - **System Health Status**: `HEALTHY`
 
 ---
