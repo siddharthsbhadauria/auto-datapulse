@@ -1,13 +1,13 @@
 """
-Great Expectations Data Contracts Engine
-Asserts schema integrity and operational bounds for homelab telemetry.
+Data contract for telemetry snapshots: checks required fields and value ranges before anything is stored.
 """
-from typing import Dict, Any
+from typing import Any
+
 
 class DataContractVerifier:
     """Verifies telemetry contract compliance before database loading."""
 
-    def verify_snapshot(self, snapshot: Dict[str, Any]) -> bool:
+    def verify_snapshot(self, snapshot: dict[str, Any]) -> bool:
         """Asserts non-null bounds, valid CPU/RAM ranges, and status integrity."""
         if not snapshot or "system" not in snapshot:
             print("[CONTRACT ERROR] Missing system telemetry block.")
@@ -25,7 +25,12 @@ class DataContractVerifier:
             print(f"[CONTRACT ERROR] Invalid RAM bound: {ram}%")
             return False
 
-        print("[OK] Great Expectations / Data Contract Passed: Telemetry snapshot valid.")
+        disk = sys_metrics.get("disk_percent", -1)
+        if not (0 <= disk <= 100):
+            print(f"[CONTRACT ERROR] Invalid disk bound: {disk}%")
+            return False
+
+        print("[OK] Data contract passed: telemetry snapshot valid.")
         return True
 
 if __name__ == "__main__":

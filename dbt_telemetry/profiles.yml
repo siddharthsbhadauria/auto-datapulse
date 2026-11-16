@@ -1,0 +1,8 @@
+dbt_telemetry:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # Same file main.py writes. Override with DUCKDB_PATH on the NAS.
+      path: "{{ env_var('DUCKDB_PATH', '../data/telemetry.duckdb') }}"
+      threads: 1

@@ -1,11 +1,8 @@
 """
-UGREEN NAS Telemetry Collector Module
-Ingests host system performance, S.M.A.R.T. disk attributes, and container metrics.
+Telemetry collector: reads host CPU, memory, disk usage and disk I/O counters with psutil.
 """
-import time
-import os
-from datetime import datetime, timezone
-from typing import Dict, Any
+from datetime import UTC, datetime
+from typing import Any
 
 try:
     import psutil
@@ -14,39 +11,29 @@ except ImportError:
     HAS_PSUTIL = False
 
 class TelemetryCollector:
-    """Collects system telemetry from local host and Docker containers."""
+    """Collects one telemetry snapshot from the host."""
 
-    def capture_metrics(self) -> Dict[str, Any]:
-        """Gathers system CPU, RAM, disk, and thermals telemetry snapshot."""
-        if HAS_PSUTIL:
-            cpu_usage = psutil.cpu_percent(interval=0.5)
-            mem = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
-            disk_io = psutil.disk_io_counters()
+    def capture_metrics(self) -> dict[str, Any]:
+        """Returns CPU, RAM, disk usage and disk I/O for this host."""
+        if not HAS_PSUTIL:
+            # Never write placeholder numbers: a fake reading would poison the anomaly models downstream.
+            raise RuntimeError("psutil is not installed; cannot read host metrics.")
+        cpu_usage = psutil.cpu_percent(interval=0.5)
+        mem = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        disk_io = psutil.disk_io_counters()
 
-            cpu_val = float(cpu_usage)
-            ram_total = round(mem.total / (1024 ** 3), 2)
-            ram_used = round(mem.used / (1024 ** 3), 2)
-            ram_pct = float(mem.percent)
-            disk_total = round(disk.total / (1024 ** 3), 2)
-            disk_used = round(disk.used / (1024 ** 3), 2)
-            disk_pct = float(disk.percent)
-            r_bytes = disk_io.read_bytes if disk_io else 0
-            w_bytes = disk_io.write_bytes if disk_io else 0
-        else:
-            # Standard library fallback metrics
-            cpu_val = 14.5
-            ram_total = 32.0
-            ram_used = 8.4
-            ram_pct = 26.25
-            disk_total = 1000.0
-            disk_used = 240.0
-            disk_pct = 24.0
-            r_bytes = 1024000
-            w_bytes = 2048000
-
+        cpu_val = float(cpu_usage)
+        ram_total = round(mem.total / (1024 ** 3), 2)
+        ram_used = round(mem.used / (1024 ** 3), 2)
+        ram_pct = float(mem.percent)
+        disk_total = round(disk.total / (1024 ** 3), 2)
+        disk_used = round(disk.used / (1024 ** 3), 2)
+        disk_pct = float(disk.percent)
+        r_bytes = disk_io.read_bytes if disk_io else 0
+        w_bytes = disk_io.write_bytes if disk_io else 0
         snapshot = {
-            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "timestamp": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "system": {
                 "cpu_percent": cpu_val,
                 "ram_total_gb": ram_total,

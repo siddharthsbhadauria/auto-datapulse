@@ -1,16 +1,16 @@
 """
 Auto-DataPulse Main Pipeline Entrypoint & Daemon Loop
-Orchestrates telemetry collection, Great Expectations contract verification, DuckDB persistence, and daily Git report publishing.
+Collects a telemetry snapshot, checks it against the data contract, stores it in DuckDB and publishes a daily report.
 """
+import json
 import os
 import sys
-import json
 import time
-from datetime import datetime, timezone
 
 from src.collector import TelemetryCollector
-from src.quality_contracts import DataContractVerifier
 from src.git_publisher import GitPublisher
+from src.quality_contracts import DataContractVerifier
+
 
 def run_pipeline():
     print("[INFO] Executing Auto-DataPulse Pipeline on UGREEN NAS...")
@@ -19,7 +19,7 @@ def run_pipeline():
     collector = TelemetryCollector()
     snapshot = collector.capture_metrics()
 
-    # 2. Great Expectations Data Contract Verification
+    # 2. Data contract check
     verifier = DataContractVerifier()
     if not verifier.verify_snapshot(snapshot):
         print("[FATAL] Telemetry contract check failed! Aborting pipeline execution step.")
@@ -33,7 +33,7 @@ def run_pipeline():
     # Append to JSONL Backup
     with open(json_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(snapshot) + "\n")
-        
+
     try:
         import duckdb
         conn = duckdb.connect(db_path)
@@ -50,7 +50,7 @@ def run_pipeline():
                 status VARCHAR
             )
         """)
-        
+
         sys_info = snapshot["system"]
         conn.execute("""
             INSERT INTO telemetry_snapshots VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -80,10 +80,10 @@ def run_pipeline():
 
 def start_daemon():
     poll_interval = int(os.getenv("POLL_INTERVAL_SECONDS", "900"))
-    print(f"==================================================================")
-    print(f"🚀 Auto-DataPulse Homelab Daemon Started")
+    print("==================================================================")
+    print("🚀 Auto-DataPulse Homelab Daemon Started")
     print(f"⏱️  Polling Interval: {poll_interval} seconds ({poll_interval // 60} minutes)")
-    print(f"==================================================================")
+    print("==================================================================")
 
     while True:
         try:

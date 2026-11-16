@@ -6,6 +6,7 @@ WITH daily_agg AS (
         ROUND(AVG(cpu_percent), 2) AS avg_cpu_percent,
         ROUND(MAX(cpu_percent), 2) AS max_cpu_percent,
         ROUND(AVG(ram_percent), 2) AS avg_ram_percent,
+        ROUND(MAX(ram_percent), 2) AS max_ram_percent,
         ROUND(MAX(ram_used_gb), 2) AS max_ram_used_gb,
         ROUND(MAX(disk_percent), 2) AS max_disk_percent
     FROM {{ ref('stg_telemetry') }}
@@ -17,6 +18,7 @@ SELECT
     avg_cpu_percent,
     max_cpu_percent,
     avg_ram_percent,
+    max_ram_percent,
     max_ram_used_gb,
     max_disk_percent,
     CASE 

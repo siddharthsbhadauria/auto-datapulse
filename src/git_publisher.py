@@ -2,12 +2,12 @@
 Git Publisher Engine
 Formats daily infrastructure reports and commits them to GitHub via REST API or GitPython.
 """
-import os
-import json
 import base64
+import os
+from datetime import UTC, datetime
+from typing import Any
+
 import requests
-from datetime import datetime, timezone
-from typing import Dict, Any
 
 try:
     import git
@@ -23,11 +23,11 @@ class GitPublisher:
         self.github_token = os.getenv("GITHUB_TOKEN", "")
         self.github_repo = os.getenv("GITHUB_REPO", "siddharthsbhadauria/auto-datapulse")
 
-    def generate_markdown_report(self, snapshot: Dict[str, Any]) -> str:
+    def generate_markdown_report(self, snapshot: dict[str, Any]) -> str:
         """Formats snapshot telemetry into a clean Markdown document."""
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
         sys_info = snapshot.get("system", {})
-        
+
         md_content = f"""# 🖥️ UGREEN NAS Telemetry Report - {today}
 
 *Generated automatically by Auto-DataPulse at {snapshot.get('timestamp', today)}*
@@ -82,19 +82,19 @@ class GitPublisher:
             print(f"[GIT API WARNING] API commit returned status {put_res.status_code}: {put_res.text}")
             return False
 
-    def publish_daily_report(self, snapshot: Dict[str, Any]) -> bool:
+    def publish_daily_report(self, snapshot: dict[str, Any]) -> bool:
         """Writes report to REPORTS/ directory and commits to GitHub."""
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
         os.makedirs("REPORTS", exist_ok=True)
         file_name = f"telemetry_{today}.md"
         report_file = os.path.join("REPORTS", file_name)
-        
+
         content = self.generate_markdown_report(snapshot)
         with open(report_file, "w", encoding="utf-8") as f:
             f.write(content)
 
         print(f"[SUCCESS] Wrote daily telemetry report to {report_file}")
-        
+
         commit_msg = f"chore(telemetry): update UGREEN NAS telemetry report [{today}]"
 
         # 1. Try GitHub REST API first (works inside Docker container)

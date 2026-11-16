@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: raw_telemetry
+    description: Raw snapshots written by main.py every 15 minutes.
+    schema: main
+    tables:
+      - name: snapshots
+        identifier: telemetry_snapshots
+        columns:
+          - name: timestamp
+            tests: [not_null]
+          - name: cpu_percent
+            tests: [not_null]
+
+models:
+  - name: stg_telemetry
+    columns:
+      - name: record_timestamp
+        tests: [not_null]
+      - name: record_date
+        tests: [not_null]
+  - name: fct_daily_disk_wear
+    columns:
+      - name: record_date
+        tests: [not_null, unique]

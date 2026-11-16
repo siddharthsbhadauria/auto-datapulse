@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths: ["**.py", "**.sql", "**.yml", "requirements*.txt", "ruff.toml"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-test-dbt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false   # main.py must never push a report from CI
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Lint
+        run: ruff check .
+      - name: Test
+        run: pytest -q
+      - name: Write one real snapshot to DuckDB
+        run: python main.py --once
+        env:
+          GITHUB_TOKEN: ""
+      - name: dbt build (models and schema tests)
+        working-directory: dbt_telemetry
+        run: dbt build --profiles-dir .
